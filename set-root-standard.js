@@ -14,7 +14,7 @@ async function main() {
   const fullKey = privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
   
   const contractAddress = "0x8795f60e40020edeC438f0b72108bF5Fb12805A8";
-  const MERKLE_ROOT = "0xe390c7ce3538b80da56b9259857295fbad23f3c6c01f8da276a39d4ff0eeb9b2";
+  const MERKLE_ROOT = "0x8916ddd2f05cdb7acc446fa2fc75bc9ebc3829d0ab0eb68c05c336d804530dc6";
   
   console.log(`Contract address: ${contractAddress}`);
   console.log(`Merkle root to set: ${MERKLE_ROOT}`);
