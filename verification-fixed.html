@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blockchain Certificate Verification</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -25,10 +29,27 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.2);
         }
-        h1 { color: white; text-align: center; margin-bottom: 8px; font-size: 28px; }
-        .subtitle { color: #aaa; text-align: center; margin-bottom: 32px; font-size: 14px; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; color: white; margin-bottom: 8px; font-weight: 500; }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
         textarea {
             width: 100%;
             padding: 12px 16px;
@@ -40,7 +61,10 @@
             font-family: monospace;
             resize: vertical;
         }
-        textarea:focus { outline: none; border-color: #4a90e2; }
+        textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
         button {
             width: 100%;
             padding: 14px;
@@ -52,10 +76,20 @@
             transition: all 0.2s;
             margin-bottom: 12px;
         }
-        .btn-verify { background: #4a90e2; color: white; }
-        .btn-verify:hover { background: #357abd; }
-        .btn-connect { background: #2c3e50; color: white; }
-        .btn-connect:hover { background: #1e2a36; }
+        .btn-verify {
+            background: #4a90e2;
+            color: white;
+        }
+        .btn-verify:hover {
+            background: #357abd;
+        }
+        .btn-connect {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-connect:hover {
+            background: #1e2a36;
+        }
         .result {
             margin-top: 24px;
             padding: 20px;
@@ -64,9 +98,21 @@
             font-weight: bold;
             font-size: 18px;
         }
-        .result.valid { background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71; }
-        .result.invalid { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; }
-        .result.pending { background: rgba(241, 196, 15, 0.2); border: 1px solid #f1c40f; color: #f1c40f; }
+        .result.valid {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+        .result.invalid {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        .result.pending {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+            color: #f1c40f;
+        }
         .status {
             margin-top: 12px;
             padding: 12px;
@@ -83,9 +129,21 @@
             border-radius: 12px;
             margin-top: 20px;
         }
-        .example p { color: #888; font-size: 12px; margin-bottom: 8px; }
-        .example-code { font-family: monospace; color: #4a90e2; font-size: 11px; word-break: break-all; }
-        hr { border-color: #333; margin: 20px 0; }
+        .example p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .example-code {
+            font-family: monospace;
+            color: #4a90e2;
+            font-size: 11px;
+            word-break: break-all;
+        }
+        hr {
+            border-color: #333;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -119,33 +177,30 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script>
-        // CONTRACT DETAILS
-        const CONTRACT_ADDRESS = "0x680c2450F26659c3df672Eb1f90255F216e5175D";
+        const CONTRACT_ADDRESS = "0x44e415bc9C4bA95C8eD42Be5D1641E19F1E8Bf50";
         
-        // EXACT ABI FROM YOUR COMPILED CONTRACT
-        const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"leafHash","type":"bytes32"},{"indexed":false,"internalType":"address","name":"claimer","type":"address"}],"name":"CertificateClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"leafHash","type":"bytes32"},{"indexed":false,"internalType":"bool","name":"isValid","type":"bool"}],"name":"CertificateVerified","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"newRoot","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MerkleRootUpdated","type":"event"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"claimCertificate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"currentMerkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"isCertificateClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"isValidCertificate","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_newRoot","type":"bytes32"}],"name":"setMerkleRoot","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"usedCertificates","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}];
+        const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"leafHash","type":"bytes32"},{"indexed":false,"internalType":"address","name":"claimer","type":"address"}],"name":"CertificateClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"newRoot","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MerkleRootUpdated","type":"event"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"claimCertificate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"currentMerkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"isCertificateClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"isValidCertificate","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_newRoot","type":"bytes32"}],"name":"setMerkleRoot","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"usedCertificates","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}];
         
-        // Certificate data with precomputed leaf hashes and proofs
         const CERTIFICATES = {
             "CERT-001|Alice Chen|secret789": {
-                leaf: "0x12c108b512d99dbf8dee65fc8df5b76e45f98974e9a9b72910b171601bc525af",
+                leaf: "0x139ca341b4aa03adb7af37c69a9c4ce59c2291bbf71dc80ef8c74cf3e5a00439",
                 proof: [
-                    "0x9f8b795d3dbde31d19f1e8dece07e3274c95a5a6933db947e5102b74417cf8e4",
-                    "0x4cf6e0dda32ea38319f599566d58eac76394ea6210b13c6f89e22444d6cc2731"
+                    "0x102d59447bad54a0c03bed9d93d11f13aefe6440c3857634611e265b4b7a5e0c",
+                    "0xcab0b48b002f035fe070ca62d72f36f0e193500bbe0565d49f195a46d5548003"
                 ]
             },
             "CERT-002|Bob Wilson|secret456": {
-                leaf: "0x9f8b795d3dbde31d19f1e8dece07e3274c95a5a6933db947e5102b74417cf8e4",
+                leaf: "0x102d59447bad54a0c03bed9d93d11f13aefe6440c3857634611e265b4b7a5e0c",
                 proof: [
-                    "0x12c108b512d99dbf8dee65fc8df5b76e45f98974e9a9b72910b171601bc525af",
-                    "0x4cf6e0dda32ea38319f599566d58eac76394ea6210b13c6f89e22444d6cc2731"
+                    "0x139ca341b4aa03adb7af37c69a9c4ce59c2291bbf71dc80ef8c74cf3e5a00439",
+                    "0xcab0b48b002f035fe070ca62d72f36f0e193500bbe0565d49f195a46d5548003"
                 ]
             },
             "CERT-003|Charlie Davis|secret123": {
-                leaf: "0xf48021de0d0821d236d81b27d41a914a0e292eea4afd724e48f038e66a1b01f3",
+                leaf: "0xfb9e6e2a5355d1d95e1c0bdac58c64f623db706c7f2bccbad665671ee0a4cd97",
                 proof: [
-                    "0xf48021de0d0821d236d81b27d41a914a0e292eea4afd724e48f038e66a1b01f3",
-                    "0x7d596cdbc008f24d961577c926b1b317287f2ad1607935aaf466a417a1a8db4f"
+                    "0xfb9e6e2a5355d1d95e1c0bdac58c64f623db706c7f2bccbad665671ee0a4cd97",
+                    "0x2e48ed1aa99e0662c025fa5b347dc80288810dfc174669ad8dfa6dfd3675ab81"
                 ]
             }
         };
@@ -154,7 +209,6 @@
         let contract;
         let userAddress;
 
-        // Connect MetaMask
         document.getElementById("connectBtn").onclick = async () => {
             if (window.ethereum) {
                 try {
@@ -164,7 +218,6 @@
                     userAddress = accounts[0];
                     contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
                     
-                    // Test the contract connection
                     const root = await contract.methods.currentMerkleRoot().call();
                     const owner = await contract.methods.owner().call();
                     
@@ -178,7 +231,6 @@
             }
         };
 
-        // Verify certificate
         document.getElementById("verifyBtn").onclick = async () => {
             if (!contract) {
                 document.getElementById("status").innerHTML = "⚠️ Please connect MetaMask first!";

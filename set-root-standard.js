@@ -13,36 +13,36 @@ async function main() {
 
   const fullKey = privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
   
+  const contractAddress = "0x8795f60e40020edeC438f0b72108bF5Fb12805A8";
+  const MERKLE_ROOT = "0xe390c7ce3538b80da56b9259857295fbad23f3c6c01f8da276a39d4ff0eeb9b2";
+  
+  console.log(`Contract address: ${contractAddress}`);
+  console.log(`Merkle root to set: ${MERKLE_ROOT}`);
+  
   const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
   const wallet = new ethers.Wallet(fullKey, provider);
   
-  console.log(`Deployer address: ${wallet.address}`);
+  console.log(`Wallet: ${wallet.address}`);
   
   const balance = await provider.getBalance(wallet.address);
   console.log(`Balance: ${ethers.formatEther(balance)} ETH`);
   
-  if (balance === 0n) {
-    console.error("No ETH balance. Get free Sepolia ETH from a faucet.");
-    process.exit(1);
-  }
-  
   const artifact = JSON.parse(fs.readFileSync("artifacts/contracts/StandardMerkleVerification.sol/StandardMerkleVerification.json", "utf8"));
+  const contract = new ethers.Contract(contractAddress, artifact.abi, wallet);
   
-  const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, wallet);
-  console.log("Deploying StandardMerkleVerification...");
-  const contract = await factory.deploy();
+  console.log("Setting Merkle root...");
+  const tx = await contract.setMerkleRoot(MERKLE_ROOT);
+  console.log(`Transaction hash: ${tx.hash}`);
+  console.log("Waiting for confirmation...");
   
-  console.log("Waiting for deployment...");
-  await contract.waitForDeployment();
+  await tx.wait();
+  console.log("Merkle root set successfully!");
   
-  const address = await contract.getAddress();
-  console.log(`StandardMerkleVerification deployed to: ${address}`);
-  
-  fs.writeFileSync("contract-address-standard.txt", address);
-  console.log("Address saved to contract-address-standard.txt");
+  const currentRoot = await contract.merkleRoot();
+  console.log(`Current Merkle root in contract: ${currentRoot}`);
 }
 
 main().catch((error) => {
-  console.error("Deployment failed:", error.message);
+  console.error("Failed:", error.message);
   process.exit(1);
 });
