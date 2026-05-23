@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Certificate Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: white;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        .btn-verify {
+            background: #4a90e2;
+            color: white;
+        }
+        .btn-verify:hover {
+            background: #357abd;
+        }
+        .btn-connect {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-connect:hover {
+            background: #1e2a36;
+        }
+        .result {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .result.valid {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+        .result.invalid {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        .result.pending {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+            color: #f1c40f;
+        }
+        .status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #0f0f1a;
+            color: #888;
+            font-size: 12px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .example {
+            background: #0f0f1a;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .example p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .example-code {
+            font-family: monospace;
+            color: #4a90e2;
+            font-size: 11px;
+            word-break: break-all;
+        }
+        hr {
+            border-color: #333;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Certificate Verification</h1>
+        <div class="subtitle">Blockchain-powered • Tamper-proof</div>
+
+        <button class="btn-connect" id="connectBtn">🔌 Connect MetaMask</button>
+
+        <div class="input-group">
+            <label>📄 QR Data (or paste certificate data)</label>
+            <textarea id="qrData" rows="3" placeholder="CERT-001|Alice Chen|secret789"></textarea>
+        </div>
+
+        <button class="btn-verify" id="verifyBtn">✅ Verify Certificate</button>
+
+        <div id="result" class="result pending" style="display: none;">—</div>
+        <div id="status" class="status">🔴 Not connected. Click "Connect MetaMask" first.</div>
+
+        <hr>
+
+        <div class="example">
+            <p>📋 Test certificates (copy-paste any):</p>
+            <div class="example-code">CERT-001|Alice Chen|secret789</div>
+            <div class="example-code">CERT-002|Bob Wilson|secret456</div>
+            <div class="example-code">CERT-003|Charlie Davis|secret123</div>
+            <p style="margin-top: 8px;">❌ Fake certificate example:</p>
+            <div class="example-code">FAKE-999|Hacker|fake123</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script>
+        // CONTRACT DETAILS
+        const CONTRACT_ADDRESS = "0x680c2450F26659c3df672Eb1f90255F216e5175D";
+        
+        // Certificate data with precomputed leaf hashes and proofs
+        const CERTIFICATES = {
+            "CERT-001|Alice Chen|secret789": {
+                leaf: "0x12c108b512d99dbf8dee65fc8df5b76e45f98974e9a9b72910b171601bc525af",
+                proof: [
+                    "0x9f8b795d3dbde31d19f1e8dece07e3274c95a5a6933db947e5102b74417cf8e4",
+                    "0x4cf6e0dda32ea38319f599566d58eac76394ea6210b13c6f89e22444d6cc2731"
+                ]
+            },
+            "CERT-002|Bob Wilson|secret456": {
+                leaf: "0x9f8b795d3dbde31d19f1e8dece07e3274c95a5a6933db947e5102b74417cf8e4",
+                proof: [
+                    "0x12c108b512d99dbf8dee65fc8df5b76e45f98974e9a9b72910b171601bc525af",
+                    "0x4cf6e0dda32ea38319f599566d58eac76394ea6210b13c6f89e22444d6cc2731"
+                ]
+            },
+            "CERT-003|Charlie Davis|secret123": {
+                leaf: "0xf48021de0d0821d236d81b27d41a914a0e292eea4afd724e48f038e66a1b01f3",
+                proof: [
+                    "0xf48021de0d0821d236d81b27d41a914a0e292eea4afd724e48f038e66a1b01f3",
+                    "0x7d596cdbc008f24d961577c926b1b317287f2ad1607935aaf466a417a1a8db4f"
+                ]
+            }
+        };
+
+        // FULL CONTRACT ABI
+        const ABI = [
+            {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [],
+                "name": "currentMerkleRoot",
+                "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" },
+                    { "internalType": "bytes32", "name": "leaf", "type": "bytes32" }
+                ],
+                "name": "isValidCertificate",
+                "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "owner",
+                "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [{ "internalType": "bytes32", "name": "_newRoot", "type": "bytes32" }],
+                "name": "setMerkleRoot",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [{ "internalType": "bytes32", "name": "leaf", "type": "bytes32" }],
+                "name": "isCertificateClaimed",
+                "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" },
+                    { "internalType": "bytes32", "name": "leaf", "type": "bytes32" }
+                ],
+                "name": "claimCertificate",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
+
+        let web3;
+        let contract;
+        let userAddress;
+
+        // Connect MetaMask
+        document.getElementById("connectBtn").onclick = async () => {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await web3.eth.getAccounts();
+                    userAddress = accounts[0];
+                    contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+                    
+                    // Verify contract is reachable
+                    const owner = await contract.methods.owner().call();
+                    const root = await contract.methods.currentMerkleRoot().call();
+                    
+                    document.getElementById("status").innerHTML = `✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}<br>📜 Owner: ${owner.substring(0, 10)}...<br>🌳 Merkle Root: ${root.substring(0, 16)}...`;
+                    document.getElementById("result").style.display = "none";
+                } catch (error) {
+                    document.getElementById("status").innerHTML = `❌ Connection failed: ${error.message}`;
+                }
+            } else {
+                alert("Please install MetaMask!");
+            }
+        };
+
+        // Verify certificate
+        document.getElementById("verifyBtn").onclick = async () => {
+            if (!contract) {
+                document.getElementById("status").innerHTML = "⚠️ Please connect MetaMask first!";
+                return;
+            }
+
+            const qrData = document.getElementById("qrData").value.trim();
+            if (!qrData) {
+                alert("Please enter QR data");
+                return;
+            }
+
+            const resultDiv = document.getElementById("result");
+            resultDiv.style.display = "block";
+            resultDiv.className = "result pending";
+            resultDiv.innerHTML = "⏳ Verifying on blockchain...";
+
+            // Check if certificate exists in our precomputed list
+            const cert = CERTIFICATES[qrData];
+            
+            if (!cert) {
+                resultDiv.className = "result invalid";
+                resultDiv.innerHTML = "❌ INVALID CERTIFICATE<br><small>Certificate not found in registry. This is FAKE.</small>";
+                return;
+            }
+
+            try {
+                // Call smart contract view function (free, no gas)
+                const isValid = await contract.methods.isValidCertificate(cert.proof, cert.leaf).call();
+                
+                if (isValid) {
+                    resultDiv.className = "result valid";
+                    resultDiv.innerHTML = "✅ VALID CERTIFICATE<br><small>Verified on blockchain • Tamper-proof</small>";
+                } else {
+                    resultDiv.className = "result invalid";
+                    resultDiv.innerHTML = "❌ INVALID CERTIFICATE<br><small>Merkle proof failed. This certificate is FAKE.</small>";
+                }
+            } catch (error) {
+                console.error("Verification error:", error);
+                resultDiv.className = "result invalid";
+                resultDiv.innerHTML = `❌ Verification error<br><small>${error.message.substring(0, 100)}</small>`;
+            }
+        };
+
+        // Auto-verify on Enter key
+        document.getElementById("qrData").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                document.getElementById("verifyBtn").click();
+            }
+        });
+    </script>
+</body>
+</html>
