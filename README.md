@@ -1,29 +1,28 @@
-
-```markdown
 # Certificate Blockchain Verification
 
 Scan QR code → Instantly know if certificate is real or fake.
 
 ## Contract
 
-- **Address (Sepolia)**: `0x44e415bc9C4bA95C8eD42Be5D1641E19F1E8Bf50`
+- **Address (Sepolia)**: `0x8795f60e40020edeC438f0b72108bF5Fb12805A8`
 
 ## How to Use
 
 1. Install MetaMask
 2. Switch to Sepolia network
-3. Open `verification-fixed.html` using local server
-4. Connect wallet
-5. Paste QR data and verify
+3. Run `npx serve .`
+4. Open `http://localhost:3000`
+5. Connect wallet
+6. Paste QR data and verify
 
-## Test Data
+## Test Certificates
 
-**Valid certificates:**
+**Valid:**
 - `CERT-001|Alice Chen|secret789`
 - `CERT-002|Bob Wilson|secret456`
 - `CERT-003|Charlie Davis|secret123`
 
-**Fake certificate:**
+**Fake:**
 - `FAKE-999|Hacker|fake123`
 
 ## Run Locally
@@ -31,13 +30,4 @@ Scan QR code → Instantly know if certificate is real or fake.
 ```bash
 npm install
 npx serve .
-```
 
-Then open `http://localhost:3000/verification-fixed.html`
-
-## Files
-
-- `contracts/CertificateVerificationFixed.sol` - Smart contract
-- `verification-fixed.html` - Frontend
-- `deploy-standalone.js` - Deployment script
-```
