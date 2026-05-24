@@ -40,7 +40,6 @@
             font-family: monospace;
             resize: vertical;
         }
-        textarea:focus { outline: none; border-color: #4a90e2; }
         button {
             width: 100%;
             padding: 14px;
@@ -49,7 +48,6 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             margin-bottom: 12px;
         }
         .btn-verify { background: #4a90e2; color: white; }
@@ -75,7 +73,6 @@
             color: #888;
             font-size: 12px;
             font-family: monospace;
-            word-break: break-all;
         }
         .example {
             background: #0f0f1a;
@@ -84,7 +81,7 @@
             margin-top: 20px;
         }
         .example p { color: #888; font-size: 12px; margin-bottom: 8px; }
-        .example-code { font-family: monospace; color: #4a90e2; font-size: 11px; word-break: break-all; }
+        .example-code { font-family: monospace; color: #4a90e2; font-size: 11px; }
         hr { border-color: #333; margin: 20px 0; }
     </style>
 </head>
@@ -96,7 +93,7 @@
         <button class="btn-connect" id="connectBtn">🔌 Connect MetaMask</button>
 
         <div class="input-group">
-            <label for="qrData">📄 QR Data (or paste certificate data)</label>
+            <label>📄 QR Data (or paste certificate data)</label>
             <textarea id="qrData" rows="3" placeholder="CERT-001|Alice Chen|secret789"></textarea>
         </div>
 
@@ -108,20 +105,17 @@
         <hr>
 
         <div class="example">
-            <p>📋 Test certificates (copy-paste any):</p>
+            <p>📋 Test certificates:</p>
             <div class="example-code">CERT-001|Alice Chen|secret789</div>
             <div class="example-code">CERT-002|Bob Wilson|secret456</div>
             <div class="example-code">CERT-003|Charlie Davis|secret123</div>
-            <p style="margin-top: 8px;">❌ Fake certificate example:</p>
+            <p style="margin-top: 8px;">❌ Fake certificate:</p>
             <div class="example-code">FAKE-999|Hacker|fake123</div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script>
         const CONTRACT_ADDRESS = "0x8795f60e40020edeC438f0b72108bF5Fb12805A8";
-        
-        const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"leaf","type":"bytes32"},{"indexed":false,"internalType":"address","name":"claimer","type":"address"}],"name":"CertificateClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"newRoot","type":"bytes32"}],"name":"RootUpdated","type":"event"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"},{"internalType":"bytes32","name":"leaf","type":"bytes32"}],"name":"isValid","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"merkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_root","type":"bytes32"}],"name":"setMerkleRoot","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"usedCertificates","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}];
         
         const CERTIFICATES = {
             "CERT-001|Alice Chen|secret789": {
@@ -138,29 +132,37 @@
             }
         };
 
-        let web3;
+        let provider;
         let contract;
         let userAddress;
 
         document.getElementById("connectBtn").onclick = async () => {
-            if (window.ethereum) {
-                try {
-                    await window.ethereum.request({ method: "eth_requestAccounts" });
-                    web3 = new Web3(window.ethereum);
-                    const accounts = await web3.eth.getAccounts();
-                    userAddress = accounts[0];
-                    contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
-                    
-                    const root = await contract.methods.merkleRoot().call();
-                    const owner = await contract.methods.owner().call();
-                    
-                    document.getElementById("status").innerHTML = `✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}<br>📜 Owner: ${owner.substring(0, 10)}...<br>🌳 Merkle Root: ${root.substring(0, 16)}...`;
-                    document.getElementById("result").style.display = "none";
-                } catch (error) {
-                    document.getElementById("status").innerHTML = `❌ Connection failed: ${error.message}`;
-                }
-            } else {
+            if (typeof window.ethereum === 'undefined') {
                 alert("Please install MetaMask!");
+                document.getElementById("status").innerHTML = "❌ MetaMask not detected";
+                return;
+            }
+
+            try {
+                // Request accounts
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                userAddress = accounts[0];
+                
+                // Initialize ethers with MetaMask provider
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                contract = new ethers.Contract(CONTRACT_ADDRESS, [
+                    "function merkleRoot() view returns (bytes32)",
+                    "function isValid(bytes32[] memory proof, bytes32 leaf) view returns (bool)"
+                ], provider.getSigner());
+                
+                // Test connection
+                const root = await contract.merkleRoot();
+                
+                document.getElementById("status").innerHTML = `✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}<br>🌳 Merkle Root: ${root.substring(0, 16)}...`;
+                document.getElementById("result").style.display = "none";
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").innerHTML = `❌ Connection failed: ${error.message}`;
             }
         };
 
@@ -179,38 +181,33 @@
             const resultDiv = document.getElementById("result");
             resultDiv.style.display = "block";
             resultDiv.className = "result pending";
-            resultDiv.innerHTML = "⏳ Verifying on blockchain...";
+            resultDiv.innerHTML = "⏳ Verifying...";
 
             const cert = CERTIFICATES[qrData];
             
             if (!cert) {
                 resultDiv.className = "result invalid";
-                resultDiv.innerHTML = "❌ INVALID CERTIFICATE<br><small>Certificate not found in registry. This is FAKE.</small>";
+                resultDiv.innerHTML = "❌ INVALID CERTIFICATE";
                 return;
             }
 
             try {
-                const isValid = await contract.methods.isValid(cert.proof, cert.leaf).call();
+                const isValid = await contract.isValid(cert.proof, cert.leaf);
                 
                 if (isValid) {
                     resultDiv.className = "result valid";
-                    resultDiv.innerHTML = "✅ VALID CERTIFICATE<br><small>Verified on blockchain • Tamper-proof</small>";
+                    resultDiv.innerHTML = "✅ VALID CERTIFICATE";
                 } else {
                     resultDiv.className = "result invalid";
-                    resultDiv.innerHTML = "❌ INVALID CERTIFICATE<br><small>Merkle proof failed. This certificate is FAKE.</small>";
+                    resultDiv.innerHTML = "❌ INVALID CERTIFICATE";
                 }
             } catch (error) {
-                console.error("Verification error:", error);
+                console.error(error);
                 resultDiv.className = "result invalid";
-                resultDiv.innerHTML = `❌ Verification error<br><small>${error.message.substring(0, 100)}</small>`;
+                resultDiv.innerHTML = `❌ Error: ${error.message.substring(0, 80)}`;
             }
         };
-
-        document.getElementById("qrData").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                document.getElementById("verifyBtn").click();
-            }
-        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </body>
 </html>
