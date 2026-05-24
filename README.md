@@ -1,33 +1,61 @@
-# Certificate Blockchain Verification
+# 🔗 Certificate Verification
 
-Scan QR code → Instantly know if certificate is real or fake.
+## Scan. Click. Instantly know if it's real or fake.
 
-## Contract
+No complicated stuff. Just paste the QR code data and get your answer.
 
-- **Address (Sepolia)**: `0x8795f60e40020edeC438f0b72108bF5Fb12805A8`
+---
 
-## How to Use
+## 🚀 Live Demo
 
-1. Install MetaMask
-2. Switch to Sepolia network
-3. Run `npx serve .`
-4. Open `http://localhost:3000`
-5. Connect wallet
-6. Paste QR data and verify
+**Try it now:** [Click Here](https://jahidmainuddinahmed176176.github.io/certificate-blockchain-verification/)
 
-## Test Certificates
+---
 
-**Valid:**
-- `CERT-001|Alice Chen|secret789`
-- `CERT-002|Bob Wilson|secret456`
-- `CERT-003|Charlie Davis|secret123`
+## 📝 How to Use
 
-**Fake:**
-- `FAKE-999|Hacker|fake123`
+1. Install **MetaMask** (the crypto wallet)
+2. Switch to **Sepolia** network (testnet)
+3. Open the live link above
+4. Connect your wallet
+5. Paste the certificate code
+6. See result instantly
 
-## Run Locally
+---
+
+## ✅ Test This Certificate (It's Valid)
+
+CERT-002|Bob Wilson|secret456
+
+
+## ❌ Test This One (It's Fake)
+
+FAKE-999|Hacker|fake123
+
+
+---
+
+## 🛠️ Want to Run on Your Own Computer?
 
 ```bash
 npm install
 npx serve .
 
+Then open http://localhost:3000
+
+
+
+Live Site: https://jahidmainuddinahmed176176.github.io/certificate-blockchain-verification/
+
+
+---
+
+## Steps to update:
+
+1. Go to: `https://github.com/jahidmainuddinahmed176176/certificate-blockchain-verification/blob/main/README.md`
+2. Click the pencil icon (✏️)
+3. Delete everything
+4. Paste the code above
+5. Click "Commit changes"
+
+---
