@@ -83,6 +83,7 @@
         .example p { color: #888; font-size: 12px; margin-bottom: 8px; }
         .example-code { font-family: monospace; color: #4a90e2; font-size: 11px; }
         hr { border-color: #333; margin: 20px 0; }
+        .valid-only { color: #2ecc71; }
     </style>
 </head>
 <body>
@@ -94,7 +95,7 @@
 
         <div class="input-group">
             <label>📄 QR Data (or paste certificate data)</label>
-            <textarea id="qrData" rows="3" placeholder="CERT-001|Alice Chen|secret789"></textarea>
+            <textarea id="qrData" rows="3" placeholder="CERT-002|Bob Wilson|secret456"></textarea>
         </div>
 
         <button class="btn-verify" id="verifyBtn">✅ Verify Certificate</button>
@@ -105,11 +106,9 @@
         <hr>
 
         <div class="example">
-            <p>📋 Test certificates:</p>
-            <div class="example-code">CERT-001|Alice Chen|secret789</div>
-            <div class="example-code">CERT-002|Bob Wilson|secret456</div>
-            <div class="example-code">CERT-003|Charlie Davis|secret123</div>
-            <p style="margin-top: 8px;">❌ Fake certificate:</p>
+            <p>📋 Valid certificate:</p>
+            <div class="example-code valid-only">CERT-002|Bob Wilson|secret456</div>
+            <p style="margin-top: 8px;">❌ Fake certificate example:</p>
             <div class="example-code">FAKE-999|Hacker|fake123</div>
         </div>
     </div>
@@ -119,17 +118,9 @@
         const CONTRACT_ADDRESS = "0x8795f60e40020edeC438f0b72108bF5Fb12805A8";
         
         const CERTIFICATES = {
-            "CERT-001|Alice Chen|secret789": {
-                leaf: "0x139ca341b4aa03adb7af37c69a9c4ce59c2291bbf71dc80ef8c74cf3e5a00439",
-                proof: ["0x102d59447bad54a0c03bed9d93d11f13aefe6440c3857634611e265b4b7a5e0c", "0xfb9e6e2a5355d1d95e1c0bdac58c64f623db706c7f2bccbad665671ee0a4cd97"]
-            },
             "CERT-002|Bob Wilson|secret456": {
                 leaf: "0x102d59447bad54a0c03bed9d93d11f13aefe6440c3857634611e265b4b7a5e0c",
                 proof: ["0x139ca341b4aa03adb7af37c69a9c4ce59c2291bbf71dc80ef8c74cf3e5a00439", "0xfb9e6e2a5355d1d95e1c0bdac58c64f623db706c7f2bccbad665671ee0a4cd97"]
-            },
-            "CERT-003|Charlie Davis|secret123": {
-                leaf: "0xfb9e6e2a5355d1d95e1c0bdac58c64f623db706c7f2bccbad665671ee0a4cd97",
-                proof: ["0x2e48ed1aa99e0662c025fa5b347dc80288810dfc174669ad8dfa6dfd3675ab81"]
             }
         };
 
