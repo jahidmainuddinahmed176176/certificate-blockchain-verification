@@ -114,6 +114,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
         const CONTRACT_ADDRESS = "0x8795f60e40020edeC438f0b72108bF5Fb12805A8";
         
@@ -144,18 +145,15 @@
             }
 
             try {
-                // Request accounts
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 userAddress = accounts[0];
                 
-                // Initialize ethers with MetaMask provider
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 contract = new ethers.Contract(CONTRACT_ADDRESS, [
                     "function merkleRoot() view returns (bytes32)",
                     "function isValid(bytes32[] memory proof, bytes32 leaf) view returns (bool)"
                 ], provider.getSigner());
                 
-                // Test connection
                 const root = await contract.merkleRoot();
                 
                 document.getElementById("status").innerHTML = `✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}<br>🌳 Merkle Root: ${root.substring(0, 16)}...`;
@@ -208,6 +206,5 @@
             }
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </body>
 </html>
